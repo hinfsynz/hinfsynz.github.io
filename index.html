@@ -52,7 +52,7 @@
         Song Zhang (IEEE S'13 M'14 SM'20) is a recognized leader at the intersection of power systems, cloud technology, and artificial intelligence. He received his Ph.D. from Arizona State University in 2014 and is currently a Senior Solution Architect and Grid Solution Leader at Amazon Web Services, Energy and Utilities IBU.
       </p>
       <p class="body-text">
-        With over a decade of experience spanning utility operations, R&amp;D, and cloud architecture, Song has pioneered the convergence of AI, cloud-native platforms, and power grid modernization — driving measurable transformation across the energy sector. His work has directly influenced how utilities adopt cloud and AI to improve reliability, reduce costs, and accelerate the clean energy transition.
+        With one and a half decade of experience spanning utility operations, R&amp;D, and cloud architecture, Song has pioneered the convergence of AI, cloud-native platforms, and power grid modernization — driving measurable transformation across the energy sector. His work has directly influenced how utilities adopt cloud and AI to improve reliability, reduce costs, and accelerate the clean energy transition.
       </p>
       <p class="body-text">
         Before AWS, Song served as R&amp;D Lead Analyst and Cloud CoE Lead at ISO New England, where he led cloud adoption initiatives and owned cloud application and infrastructure design for large-scale planning studies. Earlier, he worked at Alstom Grid (now a GE Vernova company) from 2014 to 2017, contributing to energy management and grid automation technologies.
@@ -112,17 +112,22 @@
             <!-- Center node -->
             <circle cx="350" cy="295" r="66" fill="url(#rg-center)" filter="url(#glow-center)" stroke="rgba(0,113,227,0.22)" stroke-width="2"/>
             <circle cx="350" cy="295" r="56" fill="none" stroke="rgba(0,113,227,0.12)" stroke-width="1" stroke-dasharray="3 6"/>
-            <text x="350" y="284" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif" font-size="24" fill="#1d1d1f">⚡</text>
+            <text x="350" y="284" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif" font-size="24" fill="#1d1d1f">🔄</text>
             <text x="350" y="302" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif" font-size="9.5" font-weight="700" fill="#1d1d1f" letter-spacing="0.8">GRID</text>
             <text x="350" y="315" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif" font-size="9.5" font-weight="700" fill="#1d1d1f" letter-spacing="0.8">TRANSFORMATION</text>
 
             <!-- Node icon badges -->
+            <defs>
+              <clipPath id="clip-ai"><circle cx="350" cy="50" r="36"/></clipPath>
+              <clipPath id="clip-cloud"><circle cx="104" cy="488" r="36"/></clipPath>
+              <clipPath id="clip-grid"><circle cx="596" cy="488" r="36"/></clipPath>
+            </defs>
             <circle cx="350" cy="50"  r="36" fill="#0071e3" filter="url(#glow-blue)"   opacity="0.93"/>
-            <text   x="350" y="60"  text-anchor="middle" font-size="24">🤖</text>
+            <image href="images/ai-icon.png"    x="314" y="14"  width="72" height="72" clip-path="url(#clip-ai)"    preserveAspectRatio="xMidYMid slice"/>
             <circle cx="104" cy="488" r="36" fill="#34c759" filter="url(#glow-green)"  opacity="0.93"/>
-            <text   x="104" y="498" text-anchor="middle" font-size="24">☁️</text>
+            <image href="images/cloud-icon.png" x="68"  y="452" width="72" height="72" clip-path="url(#clip-cloud)" preserveAspectRatio="xMidYMid slice"/>
             <circle cx="596" cy="488" r="36" fill="#ff9f0a" filter="url(#glow-orange)" opacity="0.93"/>
-            <text   x="596" y="498" text-anchor="middle" font-size="24">🔌</text>
+            <image href="images/grid-icon.png"  x="560" y="452" width="72" height="72" clip-path="url(#clip-grid)"  preserveAspectRatio="xMidYMid slice"/>
 
             <!-- Node labels -->
             <text x="350" y="96"  text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif" font-size="12" font-weight="700" fill="#0071e3">Artificial Intelligence</text>
@@ -272,7 +277,7 @@
         <!-- ── Dependency chain banner ── -->
         <div class="pd-chain" aria-label="Infrastructure dependency chain: Grid enables Cloud, Cloud scales AI">
           <div class="pd-chain-node pd-chain-grid">
-            <span class="pd-chain-icon">🔌</span>
+            <span class="pd-chain-icon"><img src="images/grid-icon.png" alt="Power Grid"/></span>
             <span class="pd-chain-label">Grid Modernization</span>
             <span class="pd-chain-sub">Cornerstone infrastructure</span>
           </div>
@@ -293,7 +298,7 @@
             <span class="pd-chain-arrow-label">enables build-out of</span>
           </div>
           <div class="pd-chain-node pd-chain-cloud">
-            <span class="pd-chain-icon">☁️</span>
+            <span class="pd-chain-icon"><img src="images/cloud-icon.png" alt="Cloud Computing"/></span>
             <span class="pd-chain-label">Data Centers &amp; Cloud</span>
             <span class="pd-chain-sub">Scalable compute fabric</span>
           </div>
@@ -314,7 +319,7 @@
             <span class="pd-chain-arrow-label">powers scaling of</span>
           </div>
           <div class="pd-chain-node pd-chain-ai">
-            <span class="pd-chain-icon">🤖</span>
+            <span class="pd-chain-icon"><img src="images/ai-icon.png" alt="Artificial Intelligence"/></span>
             <span class="pd-chain-label">AI Deployment</span>
             <span class="pd-chain-sub">At global scale</span>
           </div>
@@ -329,8 +334,8 @@
       <!-- ── Grid Transformation Comparison Slider ── -->
       <div class="gc-slider-wrap fade-up">
         <p class="label" style="margin-bottom:0.5rem;">Before &amp; After</p>
-        <h3 class="gc-slider-title">From Legacy Grid to AI-Powered Smart Grid</h3>
-        <p class="gc-slider-sub">Drag or watch the auto-reveal — see how AI and cloud modernization transform aging infrastructure into an intelligent, resilient energy network.</p>
+        <h3 class="gc-slider-title">From Legacy Grid to AI-Powered Intelligent Grid</h3>
+        <p class="gc-slider-sub">Drag or watch the auto-reveal — see how AI and cloud modernization transform aging electric grid infrastructure into an intelligent, resilient energy network.</p>
         <div class="gc-slider" id="gcSlider">
           <div class="gc-img gc-img-old">
             <img src="images/old_grid.png" alt="Legacy power grid infrastructure" draggable="false"/>
@@ -338,7 +343,7 @@
           </div>
           <div class="gc-img gc-img-new" id="gcNewImg">
             <img src="images/new_grid.png" alt="AI-powered smart grid infrastructure" draggable="false"/>
-            <span class="gc-badge gc-badge-new">AI-Powered Smart Grid</span>
+            <span class="gc-badge gc-badge-new">AI-Powered Intelligent Grid</span>
           </div>
           <div class="gc-drag-line" id="gcDragLine">
             <span class="gc-drag-handle" aria-hidden="true">
@@ -363,28 +368,26 @@
       <div class="cards">
 
         <div class="card card-ai">
-          <div class="card-icon">🤖</div>
-          <div class="card-tag">AI · Grid</div>
+          <div class="card-icon"><img src="images/ai-icon.png" alt="AI"/></div>          <div class="card-tag">AI · Grid</div>
           <h3>AI-Powered Grid Analytics</h3>
           <p>Architected ML pipelines for real-time grid state estimation and anomaly detection, enabling utilities to shift from reactive to predictive operations — reducing unplanned outages and operational costs.</p>
         </div>
 
         <div class="card card-cloud">
-          <div class="card-icon">☁️</div>
-          <div class="card-tag">Cloud · HPC</div>
+          <div class="card-icon"><img src="images/cloud-icon.png" alt="Cloud"/></div>          <div class="card-tag">Cloud · HPC</div>
           <h3>Cloud HPC for Power Simulations</h3>
           <p>Built a cloud-native platform enabling engineers to run PSS/E simulations and Monte Carlo reliability studies at scale — reducing study time from weeks to hours at a fraction of on-premise cost.</p>
         </div>
 
         <div class="card card-data">
-          <div class="card-icon">📊</div>
+          <div class="card-icon"><img src="images/bigdata-icon.png" alt="Big Data"/></div>
           <div class="card-tag">Big Data · Cloud</div>
-          <h3>Scalable Grid Data Platform</h3>
-          <p>Led development of a Hadoop-based analytics platform at ISO New England processing PMU, SCADA, market, and weather data at massive scale, enabling new classes of grid intelligence applications.</p>
+          <h3>Scalable Grid Data Analytics</h3>
+          <p>Led development of a cloud-native analytics platform at ISO New England processing PMU, SCADA, market, and weather data at massive scale, enabling new classes of grid intelligence applications.</p>
         </div>
 
         <div class="card card-hvdc">
-          <div class="card-icon">⚡</div>
+          <div class="card-icon"><img src="images/relay.png" alt="HVDC Protection"/></div>
           <div class="card-tag">Innovation · Patent</div>
           <h3>HVDC Ultra-Fast Protection</h3>
           <p>Co-invented "Ultra-fast HVDC Line Protection using Transient Signals" (Patent CN101777759B), saving utilities up to $1.5M annually by dramatically reducing fault-induced outage duration.</p>
@@ -424,7 +427,7 @@
                 <h3>Senior Solution Architect &amp; Grid Solution Leader</h3>
                 <p class="timeline-org">Amazon Web Services (AWS) — Energy &amp; Utilities IBU</p>
               </div>
-              <span class="timeline-date">2020 – Present</span>
+              <span class="timeline-date">2022 – Present</span>
             </div>
             <ul class="timeline-bullets">
               <li>Lead grid modernization and cloud transformation strategy for major utility and energy customers across North America</li>
@@ -444,13 +447,12 @@
                 <h3>R&amp;D Lead Analyst &amp; Cloud CoE Lead</h3>
                 <p class="timeline-org">ISO New England</p>
               </div>
-              <span class="timeline-date">2017 – 2020</span>
+              <span class="timeline-date">2017 – 2022</span>
             </div>
             <ul class="timeline-bullets">
               <li>Founded and led the Cloud Center of Excellence, establishing cloud governance and architecture standards for the ISO</li>
-              <li>Owned cloud application and infrastructure design for large-scale transmission planning studies</li>
-              <li>Built a Hadoop-based big data analytics platform processing PMU, SCADA, market, and weather data</li>
-              <li>Developed cloud HPC platform for PSS/E and Monte Carlo simulations, reducing study cycle time from weeks to hours</li>
+              <li>Built a cloud-native big data pipeline processing PMU, SCADA, market, and weather data</li>
+              <li>Deployed an elastic HPC platform for massive scale power system planning studies, reducing study cycle time from weeks to hours</li>
               <li>Received ISO New England CEO Innovation Award in both 2019 and 2020</li>
             </ul>
           </div>
@@ -486,7 +488,7 @@
       <div class="edu-cards">
 
         <div class="edu-card">
-          <div class="edu-icon">🎓</div>
+          <div class="edu-icon"><img src="images/edu-icon.png" alt="Degree"/></div>
           <div class="edu-body">
             <h3>Ph.D., Electrical Engineering</h3>
             <p class="edu-school">Arizona State University</p>
@@ -496,17 +498,17 @@
         </div>
 
         <div class="edu-card">
-          <div class="edu-icon">📐</div>
+          <div class="edu-icon"><img src="images/sme-icon.png" alt="Degree"/></div>
           <div class="edu-body">
-            <h3>B.S., Electrical Engineering</h3>
-            <p class="edu-school">Xi'an Jiaotong University (XJTU)</p>
-            <p class="edu-year">Xi'an, China</p>
-            <p class="edu-detail">Strong foundation in electrical engineering, power systems, and control theory. Graduated with honors.</p>
+            <h3>Subject Matter Expert (SME) in Power Systems</h3>
+            <p class="edu-school">ISO, Utilities, Vendors</p>
+            <p class="edu-year">15 years</p>
+            <p class="edu-detail">Deep, cross-sector expertise spanning the full power industry value chain — from GE to ISO New England and then to AWS. Brings a rare end-to-end perspective across product development, system deployment, grid operations, and enterprise transformation.</p>
           </div>
         </div>
 
         <div class="edu-card">
-          <div class="edu-icon">☁️</div>
+          <div class="edu-icon"><img src="images/cert-icon.png" alt="Certification"/></div>
           <div class="edu-body">
             <h3>Professional Solution Architect</h3>
             <p class="edu-school">Amazon Web Services</p>
@@ -562,11 +564,13 @@
       <p class="label">Community &amp; Service</p>
       <h2>Leading the conversation on cloud and power.</h2>
       <ul class="service-list">
-        <li>Founder &amp; Chair — IEEE PES Working Group "Cloud for Grid Modernization and Digital Transformation"</li>
-        <li>Chair — IEEE Region 1 PES Springfield Chapter</li>
-        <li>Editor — IEEE Transactions on Smart Grid</li>
+        <li>Chair — IEEE PES PSOPE <a href="https://site.ieee.org/pes-psope/subcommittees/technologies-and-innovation-subcommittee/" target="_blank" rel="noopener">Technologies and Innovation Subcommittee</a></li>
+        <li>Founder &amp; Chair — IEEE PES Working Group "<a href="https://sites.google.com/view/cloud4powergrid" target="_blank" rel="noopener">Cloud for Grid Modernization and Digital Transformation</a>"</li>
+        <li>Past Chair — IEEE Region 1 PES Springfield Chapter</li>
+        <li>Editor — <a href="https://ieee-pes.org/publications/transactions-on-smart-grid/" target="_blank" rel="noopener"></a>IEEE Transactions on Smart Grid</a></li>
         <li>Editor — CSEE Journal of Power and Energy Systems (IEEE &amp; CSEE co-sponsored)</li>
-        <li>Reviewer — IEEE Transactions on Smart Grid, Power Systems, Power Delivery, IET GT&amp;D, and more</li>
+        <li>Steering Committee Member — <a href="https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6245519" target="_blank" rel="noopener">IEEE Transactions on Cloud Computing</a></li>
+        <li>Reviewer — <a href="https://ieee-pes.org/publications/transactions-on-smart-grid/" target="_blank" rel="noopener"></a>IEEE Transactions on Smart Grid</a>, Power Systems, Power Delivery, IET GT&amp;D, and more</li>
         <li>Outstanding Reviewer — IEEE PES, March 2015</li>
       </ul>
     </div>
