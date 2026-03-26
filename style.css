@@ -704,6 +704,23 @@ h2 {
   flex-shrink: 0;
 }
 
+.timeline-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.timeline-logo {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
+  opacity: 1.0;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
 .timeline-bullets {
   list-style: none;
   display: flex;
