@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Human x Agentic AI Leadership Compass</title>
+<style>
+  :root {
+    --bg: #07111f;
+    --panel: rgba(255,255,255,0.08);
+    --panel-strong: rgba(255,255,255,0.13);
+    --text: #edf6ff;
+    --muted: #a9bbcf;
+    --cyan: #66e8ff;
+    --violet: #b88cff;
+    --green: #92ffba;
+    --amber: #ffd36a;
+    --rose: #ff7aa8;
+    --blue: #7dabff;
+    --shadow: 0 28px 80px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 10% 20%, rgba(102,232,255,.22), transparent 35%),
+      radial-gradient(circle at 80% 5%, rgba(184,140,255,.18), transparent 28%),
+      radial-gradient(circle at 70% 90%, rgba(146,255,186,.12), transparent 30%),
+      var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .sparkle {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .35;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,.9) 1px, transparent 1px),
+      radial-gradient(circle, rgba(102,232,255,.55) 1px, transparent 1px);
+    background-size: 70px 70px, 110px 110px;
+    animation: drift 18s linear infinite;
+  }
+  @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-140px); } }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 52px 24px 70px; position: relative; }
+  .hero {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 30px;
+    align-items: center;
+  }
+  .eyebrow {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid rgba(102,232,255,.25);
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: var(--cyan);
+    background: rgba(102,232,255,.07);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 0 0 rgba(146,255,186,.8);
+    animation: pulse 1.7s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(146,255,186,.75); }
+    80% { box-shadow: 0 0 0 13px rgba(146,255,186,0); }
+    100% { box-shadow: 0 0 0 0 rgba(146,255,186,0); }
+  }
+  h1 { font-size: clamp(38px, 6vw, 76px); line-height: .92; margin: 20px 0 18px; letter-spacing: -.06em; }
+  .grad { background: linear-gradient(90deg, var(--cyan), var(--violet), var(--green)); -webkit-background-clip: text; color: transparent; }
+  .subtitle { color: var(--muted); font-size: 19px; line-height: 1.6; max-width: 720px; }
+  .canvas-card {
+    min-height: 500px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+    border-radius: 34px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+  }
+  .canvas-card::before {
+    content: ""; position: absolute; inset: -120px;
+    background: conic-gradient(from 180deg, transparent, rgba(102,232,255,.18), transparent, rgba(184,140,255,.16), transparent);
+    animation: rotate 12s linear infinite;
+  }
+  @keyframes rotate { to { transform: rotate(1turn); } }
+  .orbit {
+    position: absolute;
+    inset: 48px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(7,17,31,.9) 0 24%, rgba(255,255,255,.035) 25% 100%);
+  }
+  .orbit::before, .orbit::after {
+    content: ""; position: absolute; inset: 40px; border-radius: 50%; border: 1px dashed rgba(255,255,255,.18);
+  }
+  .orbit::after { inset: 86px; opacity: .55; }
+  .core {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 152px; height: 152px; border-radius: 50%;
+    display: grid; place-items: center; text-align: center; padding: 18px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.32), rgba(102,232,255,.22) 35%, rgba(184,140,255,.15));
+    border: 1px solid rgba(255,255,255,.3);
+    box-shadow: 0 0 45px rgba(102,232,255,.18), inset 0 0 35px rgba(255,255,255,.06);
+    font-weight: 900;
+    letter-spacing: -.03em;
+  }
+  .node {
+    position: absolute;
+    width: 112px;
+    min-height: 78px;
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(7,17,31,.72);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 12px 34px rgba(0,0,0,.25);
+    animation: bob 4s ease-in-out infinite;
+  }
+  .node small { display: block; color: var(--muted); font-weight: 650; margin-top: 5px; }
+  .n1 { left: 50%; top: 15px; transform: translateX(-50%); color: var(--cyan); }
+  .n2 { right: 4px; top: 92px; color: var(--rose); animation-delay: -.8s; }
+  .n3 { right: 32px; bottom: 78px; color: var(--amber); animation-delay: -1.6s; }
+  .n4 { left: 32px; bottom: 78px; color: var(--green); animation-delay: -2.4s; }
+  .n5 { left: 4px; top: 92px; color: var(--blue); animation-delay: -3.2s; }
+  .n6 { left: 50%; bottom: 15px; transform: translateX(-50%); color: var(--violet); animation-delay: -2s; }
+  @keyframes bob { 0%,100%{ margin-top:0; } 50%{ margin-top:-12px; } }
+  .beam {
+    position: absolute; left: 50%; top: 50%; width: 2px; height: 205px; transform-origin: top;
+    background: linear-gradient(to bottom, rgba(102,232,255,.45), transparent);
+    animation: scan 9s linear infinite;
+  }
+  @keyframes scan { to { transform: rotate(1turn); } }
+  .section { margin-top: 34px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    border: 1px solid rgba(255,255,255,.12);
+    background: var(--panel);
+    border-radius: 24px;
+    padding: 20px;
+    min-height: 150px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.22);
+    transition: transform .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .card:hover { transform: translateY(-7px); background: var(--panel-strong); border-color: rgba(102,232,255,.3); }
+  .card h3 { margin: 0 0 10px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); line-height: 1.55; }
+  h2 { font-size: clamp(28px, 4vw, 46px); letter-spacing: -.04em; margin: 48px 0 16px; }
+  .table-wrap { overflow-x: auto; border-radius: 24px; border: 1px solid rgba(255,255,255,.13); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; min-width: 980px; background: rgba(7,17,31,.75); }
+  th, td { padding: 16px 18px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,.09); }
+  th { color: var(--cyan); background: rgba(102,232,255,.08); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  td { color: #e7f1fb; line-height: 1.5; }
+  td:nth-child(1) { font-weight: 900; color: var(--green); width: 16%; }
+  .tag { display: inline-block; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.13); color: var(--muted); font-size: 12px; margin: 2px; }
+  .loop {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .step {
+    position: relative;
+    padding: 16px;
+    min-height: 118px;
+    border-radius: 22px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .step::after {
+    content: "->";
+    position: absolute; right: -11px; top: 44%; color: var(--cyan); font-weight: 900;
+  }
+  .step:last-child::after { content: "↺"; right: 10px; bottom: 8px; top: auto; color: var(--green); }
+  .num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(102,232,255,.14); color: var(--cyan); font-weight: 900; margin-bottom: 10px; }
+  .step strong { display:block; margin-bottom: 6px; }
+  .step span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+  .footer-note { color: var(--muted); margin-top: 28px; line-height: 1.6; }
+  @media (max-width: 940px) {
+    .hero { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .loop { grid-template-columns: 1fr 1fr; }
+    .step::after { display: none; }
+  }
+  @media (max-width: 560px) {
+    .canvas-card { min-height: 470px; padding: 14px; }
+    .orbit { inset: 28px; }
+    .node { width: 96px; font-size: 12px; }
+    .loop { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="sparkle"></div>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <div class="eyebrow"><span class="pulse-dot"></span> Human x Agentic AI Operating Model</div>
+        <h1>The AI leader is not the operator. <span class="grad">They are the compass.</span></h1>
+        <p class="subtitle">A strong human leader turns vague ambition into intent, boundaries, evidence, learning loops, and accountability. A strong AI counterpart turns that leadership signal into plans, probes, options, execution, critique, and adaptation.</p>
+      </div>
+      <div class="canvas-card" aria-label="Animated AI leadership capability map">
+        <div class="orbit"></div>
+        <div class="beam"></div>
+        <div class="core">Accountable<br/>Human<br/>Judgment</div>
+        <div class="node n1">Objectives<small>North star</small></div>
+        <div class="node n2">Risks<small>Guardrails</small></div>
+        <div class="node n3">Requirements<small>Plan</small></div>
+        <div class="node n4">Acceptance<small>Evidence</small></div>
+        <div class="node n5">Fallbacks<small>Recovery</small></div>
+        <div class="node n6">Learning<small>Improve loop</small></div>
+      </div>
+    </section>
+
+    <section class="section grid">
+      <article class="card"><h3>Human advantage</h3><p>Meaning, values, context, taste, moral responsibility, stakeholder trust, and the courage to say no.</p></article>
+      <article class="card"><h3>AI advantage</h3><p>Fast exploration, pattern recall, simulation, decomposition, consistency checking, monitoring, and tireless iteration.</p></article>
+      <article class="card"><h3>Leadership interface</h3><p>Translate judgment into structured intent so agents can act without drifting from purpose.</p></article>
+    </section>
+
+    <h2>Competence parity: what a good AI leader gives, and what a good AI partner should mirror</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Leadership capability</th>
+            <th>Human leader competence</th>
+            <th>AI competence parity</th>
+            <th>Coordination signal</th>
+            <th>Failure mode if missing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Define objectives</td>
+            <td>Turns ambiguity into a clear outcome, priority, audience, and time horizon.</td>
+            <td>Clarifies intent, decomposes goals, proposes measurable subgoals, and flags contradictions.</td>
+            <td><span class="tag">goal statement</span><span class="tag">priority order</span><span class="tag">success horizon</span></td>
+            <td>Busy work, local optimization, or agents solving the wrong problem beautifully.</td>
+          </tr>
+          <tr>
+            <td>Define risks</td>
+            <td>Names what must not happen: ethical, legal, brand, security, quality, operational, and social risks.</td>
+            <td>Maintains guardrails, checks policies, searches for edge cases, and asks for escalation when confidence is low.</td>
+            <td><span class="tag">risk register</span><span class="tag">red lines</span><span class="tag">approval gates</span></td>
+            <td>Unbounded autonomy, reputational damage, unsafe shortcuts, or silent policy drift.</td>
+          </tr>
+          <tr>
+            <td>Define requirements</td>
+            <td>Specifies resources, constraints, dependencies, stakeholders, quality bars, and sequencing.</td>
+            <td>Builds draft specs, task graphs, dependency maps, resource estimates, and missing-information questions.</td>
+            <td><span class="tag">spec</span><span class="tag">assumptions</span><span class="tag">dependencies</span></td>
+            <td>Under-scoped plans, hidden assumptions, rework, or brittle execution.</td>
+          </tr>
+          <tr>
+            <td>Define acceptance criteria</td>
+            <td>Chooses evidence that proves the objective is met and the risks were controlled.</td>
+            <td>Creates tests, rubrics, evaluation datasets, checkpoints, traceability, and self-critique reports.</td>
+            <td><span class="tag">rubric</span><span class="tag">tests</span><span class="tag">evidence log</span></td>
+            <td>Subjective completion, premature celebration, unverifiable quality, or hidden defects.</td>
+          </tr>
+          <tr>
+            <td>Define fallback and next step</td>
+            <td>Plans how to recover: stop, escalate, narrow scope, retry, rollback, or switch strategy.</td>
+            <td>Detects gaps, diagnoses likely causes, proposes recovery paths, and preserves state for handoff.</td>
+            <td><span class="tag">fallback tree</span><span class="tag">escalation trigger</span><span class="tag">rollback plan</span></td>
+            <td>Agents loop, hide failure, overcommit, or continue after the situation has changed.</td>
+          </tr>
+          <tr>
+            <td>Maintain context</td>
+            <td>Protects institutional memory, stakeholder nuance, and why decisions were made.</td>
+            <td>Summarizes decisions, tracks assumptions, retrieves relevant history, and updates working memory.</td>
+            <td><span class="tag">decision log</span><span class="tag">source trail</span><span class="tag">context brief</span></td>
+            <td>Context loss, repeated debates, inconsistent actions, or hallucinated continuity.</td>
+          </tr>
+          <tr>
+            <td>Exercise judgment</td>
+            <td>Balances facts, values, trade-offs, timing, power dynamics, and long-term consequences.</td>
+            <td>Presents options with trade-offs, confidence levels, counterarguments, and second-order effects.</td>
+            <td><span class="tag">trade-off memo</span><span class="tag">confidence</span><span class="tag">dissent</span></td>
+            <td>False certainty, shallow optimization, or decisions that are technically correct but socially wrong.</td>
+          </tr>
+          <tr>
+            <td>Design feedback loops</td>
+            <td>Creates learning rhythm: observe, evaluate, adapt, and improve the system.</td>
+            <td>Monitors outcomes, detects drift, recommends experiments, and updates prompts, tools, or workflows.</td>
+            <td><span class="tag">metrics</span><span class="tag">review cadence</span><span class="tag">iteration log</span></td>
+            <td>Stagnation, compounding errors, weak accountability, or a system that cannot learn.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>The coordination loop</h2>
+    <div class="loop">
+      <div class="step"><div class="num">1</div><strong>Intent</strong><span>Human frames purpose, value, audience, and priority.</span></div>
+      <div class="step"><div class="num">2</div><strong>Boundaries</strong><span>Human and AI define constraints, risks, and escalation gates.</span></div>
+      <div class="step"><div class="num">3</div><strong>Plan</strong><span>AI decomposes the work; human validates trade-offs.</span></div>
+      <div class="step"><div class="num">4</div><strong>Execute</strong><span>AI acts within guardrails and records decisions.</span></div>
+      <div class="step"><div class="num">5</div><strong>Evaluate</strong><span>AI produces evidence; human judges meaning and sufficiency.</span></div>
+      <div class="step"><div class="num">6</div><strong>Adapt</strong><span>Human changes direction; AI updates the operating model.</span></div>
+    </div>
+
+    <p class="footer-note"><strong>Practical mantra:</strong> Humans lead by defining the shape of good judgment. AI contributes by making that judgment scalable, testable, inspectable, and continuously improvable.</p>
+  </main>
+</body>
+</html>
