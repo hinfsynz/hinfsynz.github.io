@@ -12,8 +12,12 @@
   <!-- Nav -->
   <nav class="nav" id="nav">
     <div class="nav-inner">
-      <span class="nav-name">Song Zhang</span>
-      <ul class="nav-links">
+      <a href="#" class="nav-brand">
+        <img src="images/favicon.png" alt="" class="nav-favicon" aria-hidden="true"/>
+        <span class="nav-name">Song Zhang</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <div class="nav-links-pill" id="navLinksPill"></div>
         <li><a href="#about">About</a></li>
         <li><a href="#pillars">Vision</a></li>
         <li><a href="#research">Research</a></li>
@@ -23,6 +27,12 @@
         <li><a href="#service">Service</a></li>
         <li><a href="#connect">Connect</a></li>
       </ul>
+      <!-- Animated tab switcher -->
+      <div class="nav-tabs" role="tablist" aria-label="Site sections">
+        <div class="nav-tabs-pill" id="navTabPill"></div>
+        <button class="nav-tab nav-tab-active" role="tab" aria-selected="true"  data-href="./index.html"                        id="navTab0">Profile</button>
+        <button class="nav-tab"                role="tab" aria-selected="false" data-href="./ai-leadership-compass/index.html"   id="navTab1">AI Compass</button>
+      </div>
       <button class="nav-menu-btn" id="navMenuBtn" aria-label="Menu">&#9776;</button>
     </div>
   </nav>
