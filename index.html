@@ -16,8 +16,8 @@
       <ul class="nav-links">
         <li><a href="#about">About</a></li>
         <li><a href="#pillars">Vision</a></li>
-        <li><a href="#research">Research &amp; Work</a></li>
-        <li><a href="#experience">Experience</a></li>
+        <li><a href="#research">Research</a></li>
+        <li><a href="#experience">Work Experience</a></li>
         <li><a href="#education">Education</a></li>
         <li><a href="#highlights">Highlights</a></li>
         <li><a href="#service">Service</a></li>
@@ -40,8 +40,11 @@
         <span class="tag">AI/ML</span>
         <span class="tag">Grid Modernization</span>
       </div>
-      <a href="#about" class="hero-cta">Explore ↓</a>
     </div>
+    <!-- Nav label overlay: populated by the p5 animation after layout is computed -->
+    <div id="hero-nav-overlay" aria-hidden="true"></div>
+    <!-- Explore link pinned to the bottom of the hero -->
+    <a href="#about" class="hero-cta hero-cta-bottom">Explore ↓</a>
   </section>
 
   <!-- About -->
@@ -364,7 +367,7 @@
   <!-- Research & Work -->
   <section class="section" id="research">
     <div class="container fade-up">
-      <p class="label">Research &amp; Work</p>
+      <p class="label">Research</p>
       <h2>Featured projects, solutions &amp; innovations.</h2>
       <div class="cards">
 
@@ -650,25 +653,621 @@
 
   <script src="script.js"></script>
 
-  <!-- Vanta.js NET animation on hero background -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+  <!-- Google Fonts for JetBrains Mono (used by the grid banner animation) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- p5.js grid banner animation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
   <script>
-    VANTA.NET({
-      el: "#hero-bg",
-      mouseControls: true,
-      touchControls: true,
-      gyroControls: false,
-      minHeight: 200.00,
-      minWidth: 200.00,
-      scale: 1.00,
-      scaleMobile: 1.00,
-      color: 0xe18d33,
-      backgroundColor: 0xffffff,
-      points: 15.00,
-      maxDistance: 25.00,
-      spacing: 20.00
+  (function(){
+
+    const COLORS = {
+      bg:        '#ffffff',
+      keyword:   '#8b5cf6',
+      func:      '#0369a1',
+      string:    '#059669',
+      number:    '#b45309',
+      comment:   '#94a3b8',
+      punct:     '#475569',
+      text:      '#1e293b',
+      guide:     'rgba(34,211,238,0.35)',
+      lineGrid:  '#e2e8f0',
+      lineActive:'#22d3ee',
+      nodeFill:  '#f8fafc',
+      nodeBorder:'#cbd5e1',
+      nodeGlow:  '#22d3ee',
+      hubGlow:   '#38bdf8',
+      sparkA:    '#22d3ee',
+      sparkB:    '#3b82f6',
+      sparkC:    '#8b5cf6'
+    };
+
+    const CODE_LINES = [
+      "function dispatchLoad(grid) {",
+      "  const forecast = ai.predict(grid);",
+      "  if (!forecast.stable) {",
+      "    return rebalance(grid);",
+      "  }",
+      "  grid.nodes.forEach(energize);",
+      "  emit('grid:dispatched', grid);",
+      "  return grid.commit();",
+      "}"
+    ];
+
+    const KEYWORDS = new Set(['function','const','let','var','if','else','return','for','while','new','typeof','true','false','null','undefined','this']);
+
+    function tokenizeLine(line){
+      const tokens = [];
+      const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)(?=\s*\()|([A-Za-z_$][\w$]*)|(\s+)|([^\sA-Za-z0-9_$]+)/g;
+      let m;
+      while ((m = re.exec(line))) {
+        const [full, comment, str, num, funcName, ident, ws, punct] = m;
+        let color = COLORS.text;
+        if (comment) color = COLORS.comment;
+        else if (str) color = COLORS.string;
+        else if (num) color = COLORS.number;
+        else if (funcName) color = COLORS.func;
+        else if (ident) color = KEYWORDS.has(ident) ? COLORS.keyword : COLORS.text;
+        else if (ws) color = COLORS.text;
+        else if (punct) color = COLORS.punct;
+        tokens.push({ text: full, color });
+      }
+      return tokens;
+    }
+
+    // Expand each code line into a per-row, per-column character array,
+    // preserving syntax highlight colors and alignment positions.
+    const ROWS = CODE_LINES.map(line => {
+      const chars = [];
+      tokenizeLine(line).forEach(tok => {
+        for (const ch of tok.text) chars.push({ ch, color: tok.color });
+      });
+      return chars;
     });
+    const MAX_COLS = Math.max(...ROWS.map(r => r.length));
+
+    const sketchFn = (p) => {
+      const root = document.getElementById('hero-bg');
+      let W, H, DPR;
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Layout variables
+      let fontSize, charW, lineH, blockX, blockY, blockW, codeBottom;
+      let neck, hub, level1 = [], level2 = [], edges = [];
+
+      // Particles
+      let grains = [];   // Code character "grains": appearing -> settled -> falling
+      let sparks = [];
+      let pulses = [];
+      let dashOffset = 0;
+      let typeCursorRow = 0, typeCursorCol = 0, typeTimer = 0;
+      const TYPE_INTERVAL = 26;  // ms — typewriter character speed
+      const MAX_GRAINS = 170;
+
+      function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+      function lerp(a,b,t){ return a + (b-a)*t; }
+
+      function computeLayout(){
+        const rect = root.getBoundingClientRect();
+        W = Math.max(rect.width, 280);
+        H = Math.max(rect.height, 380);
+
+        fontSize = W < 480 ? 11 : (W < 800 ? 12.5 : 14);
+        if (monoFont) p.textFont(monoFont);
+        else p.textFont('monospace');
+        p.textSize(fontSize);
+        charW = p.textWidth('M') || fontSize * 0.6;
+        lineH = fontSize * 1.7;
+
+        blockW = charW * MAX_COLS;
+        blockX = (W - blockW) / 2;
+
+        // Code block starts near the top of the canvas (above the headshot)
+        blockY = 26;
+        codeBottom = blockY + ROWS.length * lineH + fontSize;
+
+        // Hub anchored to 78% of canvas height so grid sits clearly in lower section
+        const hubY = H * 0.84;
+
+        // Neck is placed just above the hub — the long funnel lets grains
+        // travel all the way from the top, past the hero text, to the grid.
+        neck = { x: W / 2, y: hubY - clamp(H * 0.06, 22, 48) };
+
+        hub = { x: W / 2, y: hubY, charge: 0, energy: 0 };
+
+        const l1x = [0.16, 0.38, 0.62, 0.86];
+        const l1Gap = clamp(H * 0.07, 30, 54);
+        level1 = l1x.map(fx => ({ x: clamp(fx*W,30,W-30), y: Math.min(hub.y + l1Gap, H-80), energy: 0 }));
+
+        const l2spec = [
+          { parent:0, dx:-0.045 }, { parent:0, dx:0.05 },
+          { parent:1, dx:-0.02 },
+          { parent:2, dx:0.02 },
+          { parent:3, dx:-0.055 }, { parent:3, dx:0.045 }
+        ];
+        const l2Gap = clamp(H*0.065, 26, 46);
+        const l2y = Math.min(level1[0].y + l2Gap, H-40);
+        level2 = l2spec.map(spec => ({
+          x: clamp((l1x[spec.parent]+spec.dx)*W, 20, W-20), y: l2y, energy: 0, parent: spec.parent
+        }));
+
+        edges = [];
+        level1.forEach(n => edges.push({ from: hub, to: n, glow: 0, kind:'trunk' }));
+        level2.forEach(n => edges.push({ from: level1[n.parent], to: n, glow: 0, kind:'branch' }));
+
+        grains = []; sparks = []; pulses = [];
+        typeCursorRow = 0; typeCursorCol = 0; typeTimer = 0;
+
+        // Populate the nav label overlay with links positioned under each level2 diamond
+        populateNavOverlay();
+      }
+
+      // Section nav labels ordered to match level2 node positions left-to-right
+      const NAV_LABELS = [
+        { text: 'About',       href: '#about' },
+        { text: 'Vision',      href: '#pillars' },
+        { text: 'Research',    href: '#research' },
+        { text: 'Experience',  href: '#experience' },
+        { text: 'Education',   href: '#education' },
+        { text: 'Highlights',  href: '#highlights' }
+      ];
+
+      function populateNavOverlay(){
+        const overlay = document.getElementById('hero-nav-overlay');
+        if (!overlay) return;
+        overlay.innerHTML = '';
+
+        // Sort level2 nodes left-to-right so labels align with NAV_LABELS order
+        const sorted = [...level2].sort((a, b) => a.x - b.x);
+        const rootRect = root.getBoundingClientRect();
+
+        sorted.forEach((node, i) => {
+          const label = NAV_LABELS[i];
+          if (!label) return;
+          const a = document.createElement('a');
+          a.href = label.href;
+          a.textContent = label.text;
+          a.className = 'hero-nav-label';
+          // Position: centered on the node's canvas x, placed just below the diamond
+          a.style.left = node.x + 'px';
+          a.style.top  = (node.y + 14) + 'px';   // 14px below diamond centre
+          overlay.appendChild(a);
+        });
+      }
+
+      /* ---------------- Typewriter-style continuous spawning → grains fall ---------------- */
+      function slotPos(row, col){
+        return { x: blockX + col * charW + charW/2, y: blockY + row * lineH + fontSize*0.5 };
+      }
+
+      function advanceTyping(dtMs){
+        typeTimer += dtMs;
+        while (typeTimer >= TYPE_INTERVAL) {
+          typeTimer -= TYPE_INTERVAL;
+          const row = ROWS[typeCursorRow];
+          if (typeCursorCol < row.length) {
+            const cell = row[typeCursorCol];
+            if (cell.ch.trim() !== '' && grains.length < MAX_GRAINS) {
+              const pos = slotPos(typeCursorRow, typeCursorCol);
+              grains.push({
+                state: 'appear',
+                age: 0,
+                slotX: pos.x, slotY: pos.y,
+                x: pos.x, y: pos.y,
+                vx: 0, vy: 0,
+                rot: 0, vr: 0,
+                phase: Math.random()*Math.PI*2,
+                dwell: 420 + Math.random()*680,
+                ch: cell.ch, color: cell.color,
+                trail: []
+              });
+            }
+            typeCursorCol++;
+          } else {
+            typeCursorCol = 0;
+            typeCursorRow = (typeCursorRow + 1) % ROWS.length;
+          }
+        }
+      }
+
+      const GRAVITY = 180;
+      const DRAG = 0.992;
+
+      function updateGrains(dt){
+        const fallSpan = Math.max(neck.y - codeBottom, 1);
+        for (let i = grains.length - 1; i >= 0; i--) {
+          const g = grains[i];
+          g.age += dt;
+
+          if (g.state === 'appear') {
+            const t = clamp(g.age / 0.15, 0, 1);
+            g.x = g.slotX; g.y = g.slotY;
+            g.alpha = t;
+            g.scale = 0.5 + 0.5*t;
+            if (t >= 1) { g.state = 'settled'; g.age = 0; }
+            continue;
+          }
+
+          if (g.state === 'settled') {
+            g.alpha = 1; g.scale = 1;
+            g.x = g.slotX + Math.sin(p.millis()*0.006 + g.phase) * 1.1;
+            g.y = g.slotY + Math.cos(p.millis()*0.005 + g.phase) * 0.6;
+            if (g.age*1000 >= g.dwell) { g.state = 'falling'; g.vy = -10 - Math.random()*20; g.vx = (Math.random()-0.5)*40; g.vr = (Math.random()-0.5)*7; }
+            continue;
+          }
+
+          // Falling: continuously pulled by gravity; the closer to the neck,
+          // the stronger the inward pull — forming a hourglass funnel convergence.
+          g.alpha = 1; g.scale = 1;
+          const depth = clamp((g.y - codeBottom) / fallSpan, 0, 1);
+          g.vy += GRAVITY * dt;
+          const inward = 40 + depth*depth*460;
+          const dirX = Math.sign(neck.x - g.x) || 1;
+          g.vx = lerp(g.vx, dirX*inward, dt * (1.1 + depth*2.2));
+          g.vx *= DRAG;
+          g.x += g.vx * dt;
+          g.y += g.vy * dt;
+          g.rot += g.vr * dt;
+          g.vr *= 0.998;
+
+          g.trail.push({x:g.x, y:g.y, rot:g.rot});
+          if (g.trail.length > 5) g.trail.shift();
+
+          if (g.y >= neck.y) {
+            grains.splice(i,1);
+            spawnSpark(neck.x + (g.x-neck.x)*0.2, neck.y, g.color);
+          }
+        }
+      }
+
+      /* ---------------- Energy pulses + power grid (physically linked to the falling system) ---------------- */
+      function spawnSpark(x,y,tint){
+        const palette = [COLORS.sparkA, COLORS.sparkB, COLORS.sparkC];
+        sparks.push({
+          x0:x, y0:y,
+          cx:(x+hub.x)/2 + (Math.random()-0.5)*50, cy:(y+hub.y)/2,
+          t:0, dur:0.45+Math.random()*0.3,
+          color: Math.random()<0.4 ? tint : palette[(Math.random()*palette.length)|0],
+          trail:[]
+        });
+      }
+      function bez(p0,c,p1,t){ const mt=1-t; return { x: mt*mt*p0.x+2*mt*t*c.x+t*t*p1.x, y: mt*mt*p0.y+2*mt*t*c.y+t*t*p1.y }; }
+
+      function updateSparks(dt){
+        for (let i=sparks.length-1; i>=0; i--){
+          const s = sparks[i];
+          s.t += dt/s.dur;
+          const pos = bez({x:s.x0,y:s.y0},{x:s.cx,y:s.cy},hub, Math.min(s.t,1));
+          s.trail.push({x:pos.x,y:pos.y}); if (s.trail.length>8) s.trail.shift();
+          s.px = pos.x; s.py = pos.y;
+          if (s.t >= 1){
+            sparks.splice(i,1);
+            hub.charge += 1; hub.energy = 1;
+            if (hub.charge >= 3){ hub.charge = 0; burstToLevel1(); }
+          }
+        }
+      }
+      function burstToLevel1(){
+        edges.forEach(e => { if (e.kind==='trunk') setTimeout(()=>pulses.push(makePulse(e)), Math.random()*140); });
+      }
+      function makePulse(edge){
+        const dx=edge.to.x-edge.from.x, dy=edge.to.y-edge.from.y, len=Math.hypot(dx,dy)||1;
+        const nx=-dy/len, ny=dx/len, bow=(Math.random()-0.5)*len*0.18;
+        return { edge, t:0, dur: clamp(len/380,0.28,0.7),
+          cx:(edge.from.x+edge.to.x)/2+nx*bow, cy:(edge.from.y+edge.to.y)/2+ny*bow };
+      }
+      function updatePulses(dt){
+        for (let i=pulses.length-1;i>=0;i--){
+          const pu = pulses[i];
+          pu.t += dt/pu.dur;
+          pu.edge.glow = Math.max(pu.edge.glow, Math.min(pu.t,1));
+          if (pu.t >= 1){
+            pu.edge.to.energy = 1;
+            pulses.splice(i,1);
+            if (pu.edge.kind==='trunk' && Math.random()<0.85){
+              edges.forEach(e2 => { if (e2.kind==='branch' && e2.from===pu.edge.to) setTimeout(()=>pulses.push(makePulse(e2)), Math.random()*120); });
+            }
+          }
+        }
+      }
+      function decayGrid(dt){
+        hub.energy = Math.max(0, hub.energy - dt*1.1);
+        level1.forEach(n => n.energy = Math.max(0, n.energy - dt*1.3));
+        level2.forEach(n => n.energy = Math.max(0, n.energy - dt*1.4));
+        edges.forEach(e => e.glow = Math.max(0, e.glow - dt*1.6));
+      }
+
+      /* ---------------- Drawing ---------------- */
+      function drawBackdrop(){
+        p.background(255);
+
+        const ctx = p.drawingContext;
+        const grad = ctx.createLinearGradient(0, codeBottom, 0, hub.y);
+        grad.addColorStop(0, 'rgba(34,211,238,0.09)');
+        grad.addColorStop(1, 'rgba(34,211,238,0)');
+        ctx.fillStyle = grad;
+        const beamW = clamp(W*0.16, 50, 140);
+        ctx.beginPath();
+        ctx.moveTo(neck.x-beamW*0.6, codeBottom);
+        ctx.lineTo(neck.x+beamW*0.6, codeBottom);
+        ctx.lineTo(neck.x+2, hub.y);
+        ctx.lineTo(neck.x-2, hub.y);
+        ctx.closePath(); ctx.fill();
+
+        ctx.save();
+        ctx.strokeStyle = COLORS.guide;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4,6]);
+        ctx.lineDashOffset = -dashOffset;
+        ctx.beginPath();
+        ctx.moveTo(blockX, codeBottom);
+        ctx.quadraticCurveTo(blockX+blockW*0.18, neck.y-(neck.y-codeBottom)*0.15, neck.x, neck.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(blockX+blockW, codeBottom);
+        ctx.quadraticCurveTo(blockX+blockW*0.82, neck.y-(neck.y-codeBottom)*0.15, neck.x, neck.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawEdges(){
+        edges.forEach(e => {
+          p.stroke(COLORS.lineGrid); p.strokeWeight(1.2);
+          p.line(e.from.x,e.from.y,e.to.x,e.to.y);
+          if (e.glow > 0.01){
+            const ctx = p.drawingContext;
+            ctx.save();
+            ctx.globalAlpha = e.glow;
+            ctx.strokeStyle = COLORS.lineActive;
+            ctx.shadowColor = COLORS.lineActive;
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.moveTo(e.from.x,e.from.y); ctx.lineTo(e.to.x,e.to.y);
+            ctx.stroke();
+            ctx.restore();
+          }
+        });
+      }
+
+      function drawDiamond(n, size){
+        const s = size * (1 + n.energy*0.6);
+        const ctx = p.drawingContext;
+        ctx.save();
+        if (n.energy > 0.02){ ctx.shadowColor = COLORS.nodeGlow; ctx.shadowBlur = 14*n.energy; }
+        p.push();
+        p.translate(n.x, n.y);
+        p.rotate(Math.PI/4);
+        if (n.energy > 0.05){ p.fill(34,211,238, (0.15+n.energy*0.5)*255); p.stroke(COLORS.nodeGlow); }
+        else { p.fill(COLORS.nodeFill); p.stroke(COLORS.nodeBorder); }
+        p.strokeWeight(1.3);
+        p.rectMode(p.CENTER);
+        p.rect(0,0,s,s);
+        p.pop();
+        ctx.restore();
+      }
+
+      function drawHub(){
+        const ctx = p.drawingContext;
+        const pulse = hub.energy;
+
+        // ── Icon sizing ──────────────────────────────────────────
+        const boxW = 54 + pulse * 8;
+        const boxH = 54 + pulse * 8;
+        const boxR = 12;   // corner radius
+        const bx = hub.x - boxW / 2;
+        const by = hub.y - boxH / 2;
+
+        // ── Glow halo ────────────────────────────────────────────
+        ctx.save();
+        ctx.shadowColor = COLORS.hubGlow;
+        ctx.shadowBlur  = 10 + pulse * 28;
+
+        // Rounded-rect frame (stroke only, transparent fill)
+        ctx.beginPath();
+        ctx.roundRect(bx, by, boxW, boxH, boxR);
+        ctx.strokeStyle = pulse > 0.05 ? COLORS.lineActive : COLORS.nodeBorder;
+        ctx.lineWidth   = 2 + pulse * 1.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // Subtle filled background
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(bx, by, boxW, boxH, boxR);
+        ctx.fillStyle = `rgba(56,189,248,${0.06 + pulse * 0.18})`;
+        ctx.fill();
+        ctx.restore();
+
+        // ── Helper: draw a 4-pointed star centred at (cx, cy) ────
+        // size = tip-to-centre distance; inner = waist radius (~25% of size)
+        function sparkle4(cx, cy, size, rot) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(rot);
+          const inner = size * 0.22;
+          ctx.beginPath();
+          for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const r2    = i % 2 === 0 ? size : inner;
+            const px2   = Math.cos(angle) * r2;
+            const py2   = Math.sin(angle) * r2;
+            i === 0 ? ctx.moveTo(px2, py2) : ctx.lineTo(px2, py2);
+          }
+          ctx.closePath();
+          ctx.fillStyle   = pulse > 0.05 ? COLORS.lineActive : COLORS.nodeBorder;
+          ctx.shadowColor = COLORS.hubGlow;
+          ctx.shadowBlur  = 6 + pulse * 18;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Large sparkle — slightly right of centre, slow rotation
+        const bigRot   = p.millis() * 0.0004;
+        sparkle4(hub.x + boxW * 0.08, hub.y + boxH * 0.04, 11 + pulse * 3, bigRot);
+
+        // Small sparkle — upper-right corner area
+        const smallRot = p.millis() * 0.0007 + 0.5;
+        sparkle4(hub.x + boxW * 0.30, hub.y - boxH * 0.26, 6 + pulse * 1.5, smallRot);
+      }
+
+      function drawGrains(){
+        p.textAlign(p.CENTER, p.CENTER);
+        if (monoFont) p.textFont(monoFont);
+        else p.textFont('monospace');
+        const fallSpan = Math.max(neck.y - codeBottom, 1);
+
+        grains.forEach(g => {
+          if (g.state === 'falling') {
+            for (let i=0;i<g.trail.length-1;i++){
+              const t = g.trail[i];
+              const a = (i+1)/g.trail.length * 0.35;
+              p.push();
+              p.translate(t.x, t.y);
+              p.rotate(t.rot);
+              p.textSize(fontSize);
+              const c = p.color(g.color); c.setAlpha(a*255);
+              p.fill(c); p.noStroke();
+              p.text(g.ch, 0, 0);
+              p.pop();
+            }
+          }
+
+          const depth = clamp((g.y - codeBottom)/fallSpan, 0, 1);
+          const ctx = p.drawingContext;
+          ctx.save();
+          if (g.state === 'falling' && depth > 0.55){
+            ctx.shadowColor = COLORS.lineActive;
+            ctx.shadowBlur = (depth-0.55)*4;
+          }
+          p.push();
+          p.translate(g.x, g.y);
+          p.rotate(g.rot || 0);
+          p.scale(g.scale || 1);
+          p.textSize(fontSize);
+          const c = p.color(g.color); c.setAlpha((g.alpha!==undefined?g.alpha:1)*255);
+          p.fill(c); p.noStroke();
+          p.text(g.ch, 0, 0);
+          p.pop();
+          ctx.restore();
+        });
+      }
+
+      function drawSparks(){
+        sparks.forEach(s => {
+          const ctx = p.drawingContext;
+          for (let i=0;i<s.trail.length;i++){
+            const pt = s.trail[i], a=(i+1)/s.trail.length;
+            const c = p.color(s.color); c.setAlpha(a*0.5*255);
+            p.noStroke(); p.fill(c);
+            p.circle(pt.x, pt.y, 2*a*2);
+          }
+          ctx.save();
+          ctx.shadowColor = s.color; ctx.shadowBlur = 10;
+          p.fill(s.color); p.noStroke();
+          p.circle(s.px, s.py, 2.6*2);
+          ctx.restore();
+        });
+      }
+
+      function drawPulses(){
+        pulses.forEach(pu => {
+          const pos = bez(pu.edge.from, {x:pu.cx,y:pu.cy}, pu.edge.to, Math.min(pu.t,1));
+          const ctx = p.drawingContext;
+          ctx.save();
+          ctx.shadowColor = COLORS.lineActive; ctx.shadowBlur = 12;
+          p.fill(COLORS.lineActive); p.noStroke();
+          p.circle(pos.x, pos.y, 6);
+          ctx.restore();
+        });
+      }
+
+      function renderAll(){
+        drawBackdrop();
+        drawEdges();
+        level1.forEach(n => drawDiamond(n,12));
+        level2.forEach(n => drawDiamond(n,9));
+        drawPulses();
+        drawHub();
+        drawGrains();
+        drawSparks();
+      }
+
+      /* ---------------- p5 lifecycle ---------------- */
+      let monoFont = null;
+
+      p.setup = () => {
+        DPR = Math.min(window.devicePixelRatio || 1, 2);
+        p.pixelDensity(DPR);
+        const rect = root.getBoundingClientRect();
+        const cnv = p.createCanvas(Math.max(rect.width,280), Math.max(rect.height,380));
+        cnv.parent(root);
+
+        // Position canvas absolutely so it fills the hero behind the content
+        cnv.style('position', 'absolute');
+        cnv.style('top', '0');
+        cnv.style('left', '0');
+        cnv.style('width', '100%');
+        cnv.style('height', '100%');
+
+        // Start the animation immediately with system monospace,
+        // then swap in JetBrains Mono once it loads (non-blocking).
+        p.loadFont(
+          'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/ttf/JetBrainsMono-Regular.ttf',
+          (f) => { monoFont = f; },  // swap font in when ready
+          () => {}                    // silently ignore failure — system monospace stays
+        );
+
+        computeLayout();
+
+        if (reduceMotion) {
+          // Reduced-motion: render a static snapshot and stop looping
+          for (let i=0;i<26;i++) advanceTyping(TYPE_INTERVAL+1);
+          grains.forEach((g,i) => {
+            if (i % 2 === 0) { g.state='falling'; g.y = codeBottom + Math.random()*(neck.y-codeBottom); g.x = neck.x + (Math.random()-0.5)*40; }
+          });
+          level1.forEach((n,i)=> n.energy = i%2===0?0.6:0.2);
+          level2.forEach((n,i)=> n.energy = i%3===0?0.5:0.1);
+          hub.energy = 0.5;
+          renderAll();
+          p.noLoop();
+        }
+      };
+
+      let lastMs = 0;
+      p.draw = () => {
+        const now = p.millis();
+        const dtMs = lastMs ? Math.min(now-lastMs, 40) : 16;
+        lastMs = now;
+        const dt = dtMs/1000;
+
+        dashOffset += dt*14;
+        advanceTyping(dtMs);
+        updateGrains(dt);
+        updateSparks(dt);
+        updatePulses(dt);
+        decayGrid(dt);
+        renderAll();
+      };
+
+      // Resize handler: debounced, also watched via ResizeObserver
+      let resizeTimer;
+      function onResize(){
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          const rect = root.getBoundingClientRect();
+          p.resizeCanvas(Math.max(rect.width,280), Math.max(rect.height,380));
+          computeLayout();
+          if (reduceMotion) renderAll();
+        }, 120);
+      }
+      window.addEventListener('resize', onResize);
+      if (window.ResizeObserver) new ResizeObserver(onResize).observe(root);
+    };
+
+    new p5(sketchFn);
+  })();
   </script>
 </body>
 </html>

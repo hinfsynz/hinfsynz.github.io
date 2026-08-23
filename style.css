@@ -91,10 +91,45 @@ body {
   justify-content: center;
   text-align: center;
   position: relative;
+  overflow: hidden;
   padding: 6rem 1.5rem 4rem;
 }
 
 .hero-content { max-width: 700px; position: relative; z-index: 1; }
+
+/* Nav label overlay — absolutely fills hero, pointer-events off by default
+   so it doesn't block scrolling; individual labels re-enable pointer-events */
+#hero-nav-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-nav-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+  pointer-events: all;
+  white-space: nowrap;
+  transition: color 0.2s, opacity 0.2s;
+  opacity: 0.82;
+}
+.hero-nav-label:hover { color: var(--accent-hover); opacity: 1; }
+
+/* Explore link pinned to the bottom-centre of the hero */
+.hero-cta-bottom {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
 
 .hero-photo {
   width: 128px;
