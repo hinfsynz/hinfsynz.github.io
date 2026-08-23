@@ -130,6 +130,17 @@ body {
   align-items: center;
 }
 
+/* Pill wrapper li takes no space */
+.nav-links-pill-item {
+  position: static;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
 /* Sliding active pill for nav links — hidden until first click */
 .nav-links-pill {
   position: absolute;

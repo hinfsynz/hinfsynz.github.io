@@ -17,7 +17,7 @@
         <span class="nav-name">Song Zhang</span>
       </a>
       <ul class="nav-links" id="navLinks">
-        <div class="nav-links-pill" id="navLinksPill"></div>
+        <li class="nav-links-pill-item"><div class="nav-links-pill" id="navLinksPill"></div></li>
         <li><a href="#about">About</a></li>
         <li><a href="#pillars">Vision</a></li>
         <li><a href="#research">Research</a></li>
@@ -1210,23 +1210,30 @@
       p.setup = () => {
         DPR = Math.min(window.devicePixelRatio || 1, 2);
         p.pixelDensity(DPR);
-        const rect = root.getBoundingClientRect();
-        const cnv = p.createCanvas(Math.max(rect.width,280), Math.max(rect.height,380));
+
+        // Use a safe fallback size; the ResizeObserver below will
+        // correct it once the hero has its real CSS dimensions.
+        const initW = root.offsetWidth  || window.innerWidth  || 800;
+        const initH = root.offsetHeight || window.innerHeight || 600;
+        const cnv = p.createCanvas(Math.max(initW, 280), Math.max(initH, 380));
         cnv.parent(root);
 
-        // Position canvas absolutely so it fills the hero behind the content
-        cnv.style('position', 'absolute');
-        cnv.style('top', '0');
-        cnv.style('left', '0');
-        cnv.style('width', '100%');
-        cnv.style('height', '100%');
+        // Position canvas absolutely so it sits behind hero content.
+        // Use explicit pixel sizing (not %) to avoid a GH-Pages race where
+        // setting width:'100%' before the browser has measured the hero
+        // collapses the canvas to 0.
+        const cs = cnv.elt.style;
+        cs.position = 'absolute';
+        cs.top      = '0';
+        cs.left     = '0';
+        cs.width    = initW + 'px';
+        cs.height   = initH + 'px';
 
-        // Start the animation immediately with system monospace,
-        // then swap in JetBrains Mono once it loads (non-blocking).
+        // Non-blocking font load — animation starts immediately with system monospace
         p.loadFont(
           'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/ttf/JetBrainsMono-Regular.ttf',
-          (f) => { monoFont = f; },  // swap font in when ready
-          () => {}                    // silently ignore failure — system monospace stays
+          (f) => { monoFont = f; },
+          () => {}
         );
 
         computeLayout();
@@ -1261,18 +1268,26 @@
         renderAll();
       };
 
-      // Resize handler: debounced, also watched via ResizeObserver
+      // Resize handler: debounced, also watched via ResizeObserver.
+      // Always sets explicit pixel dimensions on the canvas element so the
+      // GH-Pages remote-asset race cannot collapse it to 0.
       let resizeTimer;
       function onResize(){
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-          const rect = root.getBoundingClientRect();
-          p.resizeCanvas(Math.max(rect.width,280), Math.max(rect.height,380));
+          const W2 = Math.max(root.offsetWidth  || window.innerWidth,  280);
+          const H2 = Math.max(root.offsetHeight || window.innerHeight, 380);
+          p.resizeCanvas(W2, H2);
+          const cs = p.canvas.style;
+          cs.width  = W2 + 'px';
+          cs.height = H2 + 'px';
           computeLayout();
           if (reduceMotion) renderAll();
         }, 120);
       }
       window.addEventListener('resize', onResize);
+      // Fire once after the page fully paints so the hero has its real height
+      window.addEventListener('load', onResize);
       if (window.ResizeObserver) new ResizeObserver(onResize).observe(root);
     };
 
