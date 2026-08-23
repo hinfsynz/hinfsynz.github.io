@@ -671,16 +671,16 @@
       comment:   '#94a3b8',
       punct:     '#475569',
       text:      '#1e293b',
-      guide:     'rgba(34,211,238,0.35)',
+      guide:     'rgba(34,211,238,0.20)',
       lineGrid:  '#e2e8f0',
-      lineActive:'#22d3ee',
+      lineActive:'rgba(34,211,238,0.55)',
       nodeFill:  '#f8fafc',
       nodeBorder:'#cbd5e1',
-      nodeGlow:  '#22d3ee',
-      hubGlow:   '#38bdf8',
-      sparkA:    '#22d3ee',
-      sparkB:    '#3b82f6',
-      sparkC:    '#8b5cf6'
+      nodeGlow:  'rgba(34,211,238,0.30)',
+      hubGlow:   'rgba(56,189,248,0.25)',
+      sparkA:    'rgba(34,211,238,0.35)',
+      sparkB:    'rgba(59,130,246,0.35)',
+      sparkC:    'rgba(139,92,246,0.35)'
     };
 
     const CODE_LINES = [
@@ -743,7 +743,7 @@
       let dashOffset = 0;
       let typeCursorRow = 0, typeCursorCol = 0, typeTimer = 0;
       const TYPE_INTERVAL = 26;  // ms — typewriter character speed
-      const MAX_GRAINS = 170;
+      const MAX_GRAINS = 300;
 
       function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
       function lerp(a,b,t){ return a + (b-a)*t; }
@@ -858,7 +858,7 @@
                 vx: 0, vy: 0,
                 rot: 0, vr: 0,
                 phase: Math.random()*Math.PI*2,
-                dwell: 420 + Math.random()*680,
+                dwell: 2200 + Math.random()*1100,
                 ch: cell.ch, color: cell.color,
                 trail: []
               });
@@ -1039,7 +1039,7 @@
         p.push();
         p.translate(n.x, n.y);
         p.rotate(Math.PI/4);
-        if (n.energy > 0.05){ p.fill(34,211,238, (0.15+n.energy*0.5)*255); p.stroke(COLORS.nodeGlow); }
+        if (n.energy > 0.05){ p.fill(34,211,238, (0.08+n.energy*0.28)*255); p.stroke(COLORS.nodeGlow); }
         else { p.fill(COLORS.nodeFill); p.stroke(COLORS.nodeBorder); }
         p.strokeWeight(1.3);
         p.rectMode(p.CENTER);
@@ -1053,9 +1053,9 @@
         const pulse = hub.energy;
 
         // ── Icon sizing ──────────────────────────────────────────
-        const boxW = 54 + pulse * 8;
-        const boxH = 54 + pulse * 8;
-        const boxR = 12;   // corner radius
+        const boxW = 36 + pulse * 5;
+        const boxH = 36 + pulse * 5;
+        const boxR = 8;   // corner radius
         const bx = hub.x - boxW / 2;
         const by = hub.y - boxH / 2;
 
@@ -1076,7 +1076,7 @@
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(bx, by, boxW, boxH, boxR);
-        ctx.fillStyle = `rgba(56,189,248,${0.06 + pulse * 0.18})`;
+        ctx.fillStyle = `rgba(56,189,248,${0.04 + pulse * 0.10})`;
         ctx.fill();
         ctx.restore();
 
