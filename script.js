@@ -247,3 +247,30 @@ if (menuBtn && navLinksEl) {
     if (active) movePillTo(active);
   });
 })();
+
+// ── Hero nav labels: energized by the power grid animation ────────
+(function () {
+  // Helper to get the current label elements — they are recreated on resize
+  function getLabels() {
+    return Array.from(document.querySelectorAll('#hero-nav-overlay .hero-nav-label'));
+  }
+
+  let allEnergized = false;
+
+  // Energize all labels once (gray → blue), with a staggered strike wave.
+  // After this runs, all further grid events are ignored.
+  function energizeAll() {
+    if (allEnergized) return;
+    allEnergized = true;
+    getLabels().forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.add('label-energized', 'label-struck');
+        setTimeout(() => el.classList.remove('label-struck'), 400);
+      }, i * 70);
+    });
+  }
+
+  // Only the first burst matters — after that labels stay lit and static
+  document.addEventListener('grid:burst',      () => energizeAll());
+  document.addEventListener('grid:nodeStruck', () => energizeAll());
+})();

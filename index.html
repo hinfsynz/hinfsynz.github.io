@@ -648,7 +648,7 @@
       <p class="label">Connect</p>
       <h2>Let's build something together.</h2>
       <p class="body-text" style="margin:0 auto 0.5rem;">Interested in Song's work, research collaborations, or speaking engagements?</p>
-      <div class="connect-links">
+      <div class="connect-links" id="connectLinks">
         <a class="cta-btn" href="https://www.linkedin.com/in/szhang86" target="_blank" rel="noopener">LinkedIn →</a>
         <a class="cta-btn cta-btn-outline" href="https://scholar.google.com/citations?user=A62DqGMAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar →</a>
         <a class="cta-btn cta-btn-outline" href="https://www.researchgate.net/profile/Song_Zhang17" target="_blank" rel="noopener">ResearchGate →</a>
@@ -823,14 +823,18 @@
         { text: 'Highlights',  href: '#highlights' }
       ];
 
+      // Ordered left-to-right array of the rendered <a> elements — used by
+      // grid:nodeStruck to map a node index directly onto its label element.
+      let navLabelEls = [];
+
       function populateNavOverlay(){
         const overlay = document.getElementById('hero-nav-overlay');
         if (!overlay) return;
         overlay.innerHTML = '';
+        navLabelEls = [];
 
         // Sort level2 nodes left-to-right so labels align with NAV_LABELS order
         const sorted = [...level2].sort((a, b) => a.x - b.x);
-        const rootRect = root.getBoundingClientRect();
 
         sorted.forEach((node, i) => {
           const label = NAV_LABELS[i];
@@ -843,6 +847,7 @@
           a.style.left = node.x + 'px';
           a.style.top  = (node.y + 14) + 'px';   // 14px below diamond centre
           overlay.appendChild(a);
+          navLabelEls.push(a);
         });
       }
 
@@ -960,6 +965,8 @@
       }
       function burstToLevel1(){
         edges.forEach(e => { if (e.kind==='trunk') setTimeout(()=>pulses.push(makePulse(e)), Math.random()*140); });
+        // Notify the connect section that the grid just fired
+        document.dispatchEvent(new CustomEvent('grid:burst'));
       }
       function makePulse(edge){
         const dx=edge.to.x-edge.from.x, dy=edge.to.y-edge.from.y, len=Math.hypot(dx,dy)||1;
@@ -977,6 +984,12 @@
             pulses.splice(i,1);
             if (pu.edge.kind==='trunk' && Math.random()<0.85){
               edges.forEach(e2 => { if (e2.kind==='branch' && e2.from===pu.edge.to) setTimeout(()=>pulses.push(makePulse(e2)), Math.random()*120); });
+            }
+            // When a leaf (level2) node is struck, fire an event with its sorted index
+            if (pu.edge.kind==='branch') {
+              const sorted = [...level2].sort((a,b) => a.x - b.x);
+              const sortedIdx = sorted.indexOf(pu.edge.to);
+              document.dispatchEvent(new CustomEvent('grid:nodeStruck', { detail: { idx: sortedIdx } }));
             }
           }
         }

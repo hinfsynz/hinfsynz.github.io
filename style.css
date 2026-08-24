@@ -217,21 +217,37 @@ body {
   z-index: 2;
 }
 
+/* Struck-by-electron: transition-based, no keyframe flashing */
 .hero-nav-label {
   position: absolute;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(1);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: #9ca3af;
   text-decoration: none;
   pointer-events: all;
   white-space: nowrap;
-  transition: color 0.2s, opacity 0.2s;
-  opacity: 0.82;
+  opacity: 0.9;
+  transition: color 0.6s ease,
+              transform 0.5s ease-out,
+              text-shadow 0.5s ease-out;
 }
-.hero-nav-label:hover { color: var(--accent-hover); opacity: 1; }
+
+.hero-nav-label.label-energized {
+  color: var(--accent);
+}
+
+.hero-nav-label:hover { opacity: 1; }
+.hero-nav-label.label-energized:hover { color: var(--accent-hover); }
+
+/* Struck state: scale up + glow. JS adds this, then removes it after a hold
+   so the transition carries it back down smoothly — no keyframe, no flash. */
+.hero-nav-label.label-struck {
+  transform: translateX(-50%) scale(1.28);
+  text-shadow: 0 0 14px rgba(34,211,238,0.9), 0 0 4px rgba(34,211,238,1);
+}
 
 /* Explore link pinned to the bottom-centre of the hero */
 .hero-cta-bottom {
@@ -995,21 +1011,24 @@ h2 {
   margin-top: 1.75rem;
 }
 
+/* Buttons always fully colored — no dimmed state */
 .cta-btn {
   display: inline-block;
   padding: 0.85rem 2rem;
-  background: var(--accent);
-  color: #fff;
   border-radius: 980px;
   font-size: 0.92rem;
   font-weight: 500;
   text-decoration: none;
+  background: var(--accent);
+  color: #fff;
+  border: 1.5px solid transparent;
   transition: background 0.2s, transform 0.2s;
 }
 
-.cta-btn:hover {
-  background: var(--accent-hover);
-  transform: scale(1.03);
+.cta-btn.btn-energized {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
 }
 
 .cta-btn-outline {
@@ -1018,9 +1037,29 @@ h2 {
   border: 1.5px solid var(--accent);
 }
 
-.cta-btn-outline:hover {
-  background: rgba(0,113,227,0.06);
-  transform: scale(1.03);
+.cta-btn-outline.btn-energized {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.cta-btn:hover { transform: scale(1.03); }
+
+.cta-btn.btn-energized:not(.cta-btn-outline):hover { background: var(--accent-hover); }
+
+.cta-btn-outline.btn-energized:hover { background: rgba(0,113,227,0.06); }
+
+/* "Struck by electron" — scale-punch + cyan glow burst */
+@keyframes btn-strike {
+  0%   { transform: scale(1);    box-shadow: none; }
+  18%  { transform: scale(1.11); box-shadow: 0 0 20px 5px rgba(34,211,238,0.55); }
+  40%  { transform: scale(0.96); box-shadow: 0 0 8px 2px rgba(34,211,238,0.25); }
+  65%  { transform: scale(1.04); box-shadow: 0 0 12px 3px rgba(34,211,238,0.15); }
+  100% { transform: scale(1);    box-shadow: none; }
+}
+
+.cta-btn.btn-struck {
+  animation: btn-strike 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 
 /* ── Footer ── */
